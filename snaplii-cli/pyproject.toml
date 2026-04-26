@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "snaplii-cli"
-version = "0.1.0"
+version = "0.3.0"
 description = "CLI client for the Snaplii Agent Gateway API"
 requires-python = ">=3.9"
 dependencies = [

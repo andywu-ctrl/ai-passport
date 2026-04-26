@@ -14,10 +14,12 @@ from snaplii.config_store import ConfigStore
 from snaplii.exceptions import SnapliiCliError
 from snaplii.output import print_error
 
+_VERSION = "0.3.0"
 _DEFAULT_BASE_URL = "https://aipayment.snaplii.com"
 
 
 @click.group()
+@click.version_option(_VERSION, prog_name="snaplii")
 @click.option(
     "--base-url",
     envvar="SNAPLII_BASE_URL",
