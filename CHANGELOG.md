@@ -64,7 +64,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow 
 - `snaplii giftcard list/detail` — view owned gift cards
 - MCP server with basic tools
 - Claude Code skill definition
-- API documentation (apikey, card-tags, createOrderAndPay)
+- Claude Code skill definition
 
 ---
 

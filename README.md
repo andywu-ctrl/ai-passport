@@ -115,8 +115,7 @@ snaplii purchase --item-id CB...-CT... --price 50    # buy a card
 ai-passport/
 ├── snaplii-cli/     # Python CLI — pip-installable
 ├── mcp-server/      # MCP server for Claude Desktop
-├── skills/          # Claude Code skill definition
-└── docs/            # API reference documentation
+└── skills/          # Claude Code skill definition
 ```
 
 ### CLI Commands
@@ -279,13 +278,6 @@ The skill becomes available in Claude Code on the next session.
 If it fails, install the missing package into that interpreter (`pip install -e ./mcp-server` and/or `pip install -e ./snaplii-cli`), or change `command` to a Python that already has them.
 
 **Claude Code does not pick up the skill.** Make sure the file is at `~/.claude/skills/snaplii-cli/SKILL.md` (folder + `SKILL.md`), not `~/.claude/skills/snaplii-cli.md` directly.
-
-## API Documentation
-
-See `docs/` for full API reference:
-- [API Key Management](docs/apikey-doc.md)
-- [Card Tags & Brands](docs/card-tags-doc.md)
-- [Purchase (createOrderAndPay)](docs/create-order-and-pay-doc.md)
 
 ## Security
 
