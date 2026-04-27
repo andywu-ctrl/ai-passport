@@ -92,13 +92,23 @@ snaplii --help
 
 If you see "command not found", jump to [Troubleshooting](#troubleshooting).
 
-### 4. Authenticate
+### 4. Get your API Key
+
+Before authenticating, you need a Snaplii API key:
+
+1. Download the **Snaplii** app ([iOS](https://apps.apple.com/app/snaplii/id1550310576) / [Android](https://play.google.com/store/apps/details?id=ca.snappay.snappayapp))
+2. Register an account and bind a payment card
+3. Go to **More → Payment Methods → AI Payment Management**
+4. Tap **+ New API Key**, set a name, permission scope, and spending limit
+5. Copy the API key (format: `snp_sk_live_...`) — it is shown only once
+
+### 5. Authenticate
 
 ```bash
 snaplii init --agent-id "<your-agent-id>" --api-key "snp_sk_live_..."
 ```
 
-### 5. Use
+### 6. Use
 
 ```bash
 snaplii browse tags                                  # browse gift card categories
