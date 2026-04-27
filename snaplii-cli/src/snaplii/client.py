@@ -9,6 +9,8 @@ from snaplii.exceptions import ConfigError, GatewayApiError, GatewayConnectionEr
 class GatewayClient:
     def __init__(self, base_url: str, config_store: ConfigStore):
         self._base_url = base_url.rstrip("/")
+        if not self._base_url.startswith("https://") and "localhost" not in self._base_url and "127.0.0.1" not in self._base_url:
+            raise ConfigError("Gateway URL must use HTTPS for non-local connections.")
         self._config = config_store
         self._http = httpx.Client(timeout=30.0)
 
@@ -39,7 +41,7 @@ class GatewayClient:
 
     # ── Card browsing ─────────────────────────────────────────────
 
-    def get_all_card_tags(self, channel: str = "HOME_PAGE", location_prov: str = "ON") -> dict:
+    def get_all_card_tags(self, channel: str = "HOME_PAGE", location_prov: str = "CA") -> dict:
         resp = self._get("/v2/card-brands", params={
             "channel": channel,
             "locationProv": location_prov,
@@ -64,9 +66,9 @@ class GatewayClient:
         self,
         item_id: str,
         price: str,
-        payment_method: str = "SNAPLII_CASH",
+        payment_method: str = "SNAPLII_CREDIT",
         payment_token: str | None = None,
-        location_prov: str = "ON",
+        location_prov: str = "CA",
     ) -> dict:
         payment_ctx = {
             "specifiedPrimaryPaymentMethod": payment_method,

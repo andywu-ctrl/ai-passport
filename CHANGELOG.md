@@ -1,0 +1,77 @@
+# Changelog
+
+All notable changes to AI Passport will be documented in this file.
+
+Format follows [Keep a Changelog](https://keepachangelog.com/). Versions follow [Semantic Versioning](https://semver.org/).
+
+---
+
+## [0.3.0] — 2026-04-26
+
+### Security
+- **[CRITICAL]** `snaplii init` no longer prints access_token in output
+- **[CRITICAL]** `snaplii apikey create` masks key by default; use `--reveal` flag to show full key
+- **[CRITICAL]** `snaplii apikey list` masks all key values (CLI + MCP)
+- **[CRITICAL]** Non-localhost gateway connections now enforce HTTPS
+- **[HIGH]** MCP `snaplii_config_show` masks `api_key` and strips `token_expires_at`
+- **[HIGH]** MCP `snaplii_giftcard_detail` wraps response with `_sensitive` flag and security notice
+- **[HIGH]** MCP `snaplii_apikey_create` never returns full key in conversation context
+- **[MEDIUM]** Token refresh safety margin increased from 30s to 90s
+
+### Fixed
+- MCP server default URL now points to `aipayment.snaplii.com` (was `gateway.snaplii.com`, causing 404)
+- MCP + CLI aligned: `payment_method` default `SNAPLII_CREDIT`, `prov` default `CA`
+- Empty `error_code` bug: 502/401/404 and unknown errors now return meaningful messages
+- Skill no longer has hardcoded user path (`/Users/cz/...`)
+- Install path fixed: `pip install -e snaplii-cli/` (was `./cli`)
+
+### Changed
+- Default payment method: `SNAPLII_CASH` → `SNAPLII_CREDIT` (payment routing identifier)
+- Default prov: `ON` → `CA` (country-level filter, not province)
+- API key scope descriptions: `PAY_READ (view cards only)` / `PAY_WRITE (view + purchase)`
+
+### Added
+- Comprehensive Claude Desktop MCP setup guide in README (step-by-step with troubleshooting)
+- Python 3.10+ installation guide for Mac users
+- Partner's skill hardening: dynamic PATH resolution, prompt injection defense, error handling rules
+- `--reveal` flag on `snaplii apikey create` for explicit key display
+
+---
+
+## [0.2.0] — 2026-04-24
+
+### Added
+- **Smart features**: `snaplii smart cashback` (calculate savings), `snaplii smart dashboard` (card inventory)
+- **Purchase command**: `snaplii purchase --item-id CB...-CT... --price 50`
+- **Browse commands**: `snaplii browse tags`, `snaplii browse brand --id CB...`
+- **API key management**: `snaplii apikey list/create/delete`
+- **MCP server**: 12 tools for Claude Desktop integration
+- Error code translation: common Snaplii error codes mapped to English messages
+- Region-aware filtering: agent asks user's country before showing brands
+
+### Changed
+- CLI connects to gateway (`aipayment.snaplii.com`) via `/v2/*` endpoints with JWT auth
+- Sensitive card info (code, PIN) requires explicit user confirmation before display
+
+---
+
+## [0.1.0] — 2026-04-22
+
+### Added
+- Initial release
+- `snaplii init` — authenticate with API key
+- `snaplii config show/set` — manage configuration
+- `snaplii giftcard list/detail` — view owned gift cards
+- MCP server with basic tools
+- Claude Code skill definition
+- Claude Code skill definition
+
+---
+
+## Version History Summary
+
+| Version | Date | Highlights |
+|---------|------|------------|
+| 0.3.0 | 2026-04-26 | Security hardening, MCP fixes, user feedback |
+| 0.2.0 | 2026-04-24 | Full purchase chain, smart features, MCP 12 tools |
+| 0.1.0 | 2026-04-22 | Initial release |

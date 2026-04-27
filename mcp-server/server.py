@@ -22,7 +22,7 @@ from snaplii.exceptions import ConfigError, GatewayApiError, GatewayConnectionEr
 
 app = Server("snaplii")
 
-_DEFAULT_BASE_URL = "https://gateway.snaplii.com/gateway/mrpay"
+_DEFAULT_BASE_URL = "https://aipayment.snaplii.com"
 
 
 def _get_client() -> GatewayClient:
@@ -58,7 +58,7 @@ async def list_tools() -> list[types.Tool]:
                 "type": "object",
                 "properties": {
                     "channel": {"type": "string", "description": "HOME_PAGE or SEND_GIFT", "default": "HOME_PAGE"},
-                    "prov": {"type": "string", "description": "Province code (ON, QC, BC)", "default": "ON"},
+                    "prov": {"type": "string", "description": "Country code: CA (Canada) or US", "default": "CA"},
                 },
                 "required": [],
             },
@@ -104,7 +104,7 @@ async def list_tools() -> list[types.Tool]:
                 "properties": {
                     "item_id": {"type": "string", "description": "Item ID: {brandId}-{templateId}"},
                     "price": {"type": "string", "description": "Price in dollars"},
-                    "payment_method": {"type": "string", "description": "SNAPLII_CASH, SNAPLII_CREDIT, or SNAPLII_DEBIT", "default": "SNAPLII_CASH"},
+                    "payment_method": {"type": "string", "description": "SNAPLII_CREDIT (default), SNAPLII_CASH, or SNAPLII_DEBIT", "default": "SNAPLII_CREDIT"},
                 },
                 "required": ["item_id", "price"],
             },
@@ -121,7 +121,7 @@ async def list_tools() -> list[types.Tool]:
                 "type": "object",
                 "properties": {
                     "name": {"type": "string", "description": "Key name"},
-                    "scope": {"type": "string", "description": "PAY_READ or PAY_WRITE", "default": "PAY_READ"},
+                    "scope": {"type": "string", "description": "PAY_READ (view cards only) or PAY_WRITE (view + purchase)", "default": "PAY_READ"},
                     "limit": {"type": "number", "description": "Consumption limit in dollars"},
                 },
                 "required": ["name"],
@@ -168,9 +168,9 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         if name == "snaplii_config_show":
             store = ConfigStore()
             data = store.load()
-            safe = {k: v for k, v in data.items() if k not in ("access_token",)}
+            safe = {k: v for k, v in data.items() if k not in ("access_token", "token_expires_at")}
             if "api_key" in safe and safe["api_key"]:
-                safe["api_key"] = safe["api_key"][:8] + "..."
+                safe["api_key"] = safe["api_key"][:12] + "..."
             safe["has_valid_token"] = bool(store.get_cached_token())
             return _text(safe)
 
@@ -185,7 +185,7 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
             client = _get_client()
             result = client.get_all_card_tags(
                 channel=arguments.get("channel", "HOME_PAGE"),
-                location_prov=arguments.get("prov", "ON"),
+                location_prov=arguments.get("prov", "CA"),
             )
             return _text(result)
 
@@ -202,20 +202,29 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         elif name == "snaplii_giftcard_detail":
             client = _get_client()
             result = client.get_card_detail(arguments["card_no"])
-            return _text(result)
+            # Wrap with security notice so agent handles display carefully
+            return _text({
+                "_sensitive": True,
+                "_notice": "Contains redemption code and PIN. Show to user only upon explicit confirmation. Do NOT include in summaries or logs.",
+                "data": result,
+            })
 
         elif name == "snaplii_purchase":
             client = _get_client()
             result = client.create_order_and_pay(
                 item_id=arguments["item_id"],
                 price=arguments["price"],
-                payment_method=arguments.get("payment_method", "SNAPLII_CASH"),
+                payment_method=arguments.get("payment_method", "SNAPLII_CREDIT"),
             )
             return _text(result)
 
         elif name == "snaplii_apikey_list":
             client = _get_client()
             result = client.list_api_keys()
+            if isinstance(result, dict):
+                for key in result.get("keys", []):
+                    if "apiKey" in key:
+                        key["apiKey"] = key["apiKey"][:12] + "..." if len(key.get("apiKey", "")) > 12 else "***"
             return _text(result)
 
         elif name == "snaplii_apikey_create":
@@ -225,6 +234,10 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
                 scope=arguments.get("scope", "PAY_READ"),
                 consumption_limit=arguments.get("limit"),
             )
+            # Never return full API key in MCP context — it would leak into conversation
+            if isinstance(result, dict) and "apiKey" in result:
+                result["apiKey"] = result["apiKey"][:12] + "..." if len(result.get("apiKey", "")) > 12 else "***"
+                result["_notice"] = "Key created but masked for security. User must run 'snaplii apikey create --reveal' via CLI to see the full key."
             return _text(result)
 
         elif name == "snaplii_apikey_delete":
